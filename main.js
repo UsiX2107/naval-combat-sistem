@@ -14,7 +14,7 @@ const gameState = {
     width: 20,
     height: 15
   },
-  ships: [],
+  ships: [], // nessuna nave pre-caricata
   turn: {
     order: [],
     currentIndex: 0
@@ -48,6 +48,7 @@ function setMode(mode) {
   gameState.mode = mode;
 
   if (mode === "battle") {
+    // costruisce l'ordine dei turni in base alle navi esistenti
     if (gameState.turn.order.length === 0) {
       gameState.turn.order = gameState.ships.map(s => s.id);
       gameState.turn.currentIndex = 0;
@@ -59,7 +60,7 @@ function setMode(mode) {
 }
 
 function onShipFormSubmit(event) {
-  event.preventDefault();
+  event.preventDefault(); // blocca il reload della pagina
 
   const nameInput = document.getElementById("ship-name");
   const typeSelect = document.getElementById("ship-type");
@@ -77,11 +78,13 @@ function onShipFormSubmit(event) {
   if (isNaN(y) || y < 0 || y >= mapH) y = 0;
 
   const maxHp = parseInt(maxHpInput.value, 10) || 30;
+  const type = parseInt(typeSelect.value, 10);
 
+  const id = "ship" + nextShipId++;
   const ship = {
-    id: "ship" + nextShipId++,
-    name: nameInput.value || "Nave " + nextShipId,
-    type: parseInt(typeSelect.value, 10),
+    id,
+    name: nameInput.value || `Nave ${id}`,
+    type,
     x,
     y,
     hp: maxHp,
@@ -89,8 +92,10 @@ function onShipFormSubmit(event) {
   };
 
   gameState.ships.push(ship);
+  // aggiorna l'ordine dei turni (semplice: ordine di creazione)
   gameState.turn.order = gameState.ships.map(s => s.id);
 
+  // pulisce il form
   nameInput.value = "";
   xInput.value = "";
   yInput.value = "";
@@ -135,14 +140,7 @@ function clearGrid() {
   const cells = document.querySelectorAll(".cell");
   cells.forEach(cell => {
     cell.textContent = "";
-    cell.classList.remove(
-      "ship",
-      "ship-type-1",
-      "ship-type-2",
-      "ship-type-3",
-      "ship-type-4",
-      "ship-type-5"
-    );
+    cell.className = "cell"; // resetta tutte le classi alla sola "cell"
   });
 }
 
@@ -154,9 +152,7 @@ function renderShips() {
       const icon = typeIcons[ship.type] || "🚢";
       cell.textContent = icon;
       cell.classList.add("ship", `ship-type-${ship.type}`);
-      cell.addEventListener("click", () => {
-        showShipDetails(ship);
-      });
+      cell.onclick = () => showShipDetails(ship);
     }
   });
 }
