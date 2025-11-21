@@ -90,32 +90,38 @@ function onShipFormSubmit(event) {
   const mapW = gameState.map.width;
   const mapH = gameState.map.height;
 
-  let x = parseInt(xInput.value, 10);
-  let y = parseInt(yInput.value, 10);
+  let x = parseInt(xInput?.value, 10);
+  let y = parseInt(yInput?.value, 10);
 
   if (isNaN(x) || x < 0 || x >= mapW) x = 0;
   if (isNaN(y) || y < 0 || y >= mapH) y = 0;
 
-  const type = parseInt(typeSelect.value, 10);
-  const level = parseInt(levelSelect.value, 10) || 1;
-  const cannonType = cannonSelect.value;
+  const type = parseInt(typeSelect?.value, 10) || 1;
+  const level = parseInt(levelSelect?.value, 10) || 1;
+  const cannonType = cannonSelect?.value || "corto";
 
-  const balls = parseInt(cargoBallsInput.value, 10) || 0;
-  const wood = parseInt(cargoWoodInput.value, 10) || 0;
-  const food = parseInt(cargoFoodInput.value, 10) || 0;
+  const balls = parseInt(cargoBallsInput?.value, 10) || 0;
+  const wood = parseInt(cargoWoodInput?.value, 10) || 0;
+  const food = parseInt(cargoFoodInput?.value, 10) || 0;
 
   const id = "ship" + nextShipId++;
 
+  // Calcolo automatico delle statistiche
   const cd = 8 + 2 * level;
   const ca = 8 + 2 * type;
   const pf = 400 * level * type;
 
+  // PF ruoli: se vuoto -> 30 * livello
   const defaultRoleHp = 30 * level;
   const roles = [];
   for (let i = 0; i < 6; i++) {
-    let value = parseInt(roleHpInputs[i].value, 10);
-    if (isNaN(value) || value < 0) {
-      value = defaultRoleHp;
+    const input = roleHpInputs[i];
+    let value = defaultRoleHp;
+    if (input && input.value !== "") {
+      const v = parseInt(input.value, 10);
+      if (!isNaN(v) && v >= 0) {
+        value = v;
+      }
     }
     roles.push({
       id: i + 1,
@@ -125,20 +131,15 @@ function onShipFormSubmit(event) {
     });
   }
 
-  const siegeSlots = type <= 2 ? 1 : (type <= 4 ? 2 : 3);
-  const siegeMachines = [];
-  for (let i = 0; i < siegeSlots; i++) {
-    const val = siegeSelects[i].value;
-    if (val) {
-      siegeMachines.push(val);
-    } else {
-      siegeMachines.push(null); // slot vuoto
-    }
-  }
+  // Macchine d'assedio: fino a 3 slot, nessun limite sul tipo
+  const siegeMachines = siegeSelects.map(sel => {
+    if (!sel) return null;
+    return sel.value || null; // null = slot vuoto
+  });
 
   const ship = {
     id,
-    name: nameInput.value || `Nave ${id}`,
+    name: nameInput?.value || `Nave ${id}`,
     type,
     level,
     cannonType,
@@ -152,7 +153,7 @@ function onShipFormSubmit(event) {
       wood,
       food
     },
-    siegeSlots,
+    siegeSlots: siegeMachines.length,
     siegeMachines,
     roles
   };
@@ -160,16 +161,21 @@ function onShipFormSubmit(event) {
   gameState.ships.push(ship);
   gameState.turn.order = gameState.ships.map(s => s.id);
 
-  nameInput.value = "";
-  levelSelect.value = "1";
-  cannonSelect.value = "corto";
-  xInput.value = "";
-  yInput.value = "";
-  cargoBallsInput.value = "";
-  cargoWoodInput.value = "";
-  cargoFoodInput.value = "";
-  roleHpInputs.forEach(input => (input.value = ""));
-  siegeSelects.forEach(select => (select.value = ""));
+  // pulizia form
+  if (nameInput) nameInput.value = "";
+  if (levelSelect) levelSelect.value = "1";
+  if (cannonSelect) cannonSelect.value = "corto";
+  if (xInput) xInput.value = "";
+  if (yInput) yInput.value = "";
+  if (cargoBallsInput) cargoBallsInput.value = "";
+  if (cargoWoodInput) cargoWoodInput.value = "";
+  if (cargoFoodInput) cargoFoodInput.value = "";
+  roleHpInputs.forEach(input => {
+    if (input) input.value = "";
+  });
+  siegeSelects.forEach(select => {
+    if (select) select.value = "";
+  });
 
   renderAll();
 }
@@ -292,7 +298,6 @@ function showShipDetails(ship) {
     <p>Palle: ${ship.cargo.balls} | Legno: ${ship.cargo.wood} | Cibo: ${ship.cargo.food}</p>
 
     <h4>Macchine d'assedio</h4>
-    <p>Slot disponibili: ${ship.siegeSlots}</p>
     <ul>
       ${siegeList}
     </ul>
