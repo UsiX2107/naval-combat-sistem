@@ -6,16 +6,34 @@ body {
   color: #fff;
 }
 
+h1 {
+  margin: 0;
+}
+
+p {
+  margin-top: 5px;
+  margin-bottom: 10px;
+}
+
+#top-bar {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+  font-size: 14px;
+}
+
 #app {
   display: flex;
   height: 80vh;
-  margin-top: 20px;
+  margin-top: 10px;
 }
 
 #map-container {
   flex: 2;
   border: 1px solid #ccc;
-  background-color: #333;
+  background-color: #004466; /* qui poi mettiamo l'immagine del mare */
+  background-size: cover;
+  background-position: center;
   padding: 10px;
 }
 
@@ -25,6 +43,39 @@ body {
   padding: 10px;
   box-sizing: border-box;
   background-color: #111;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#mode-buttons {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 5px;
+}
+
+#ship-form {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+#ship-form label {
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+}
+
+#ship-form input,
+#ship-form select {
+  margin-top: 2px;
+  padding: 3px;
+}
+
+#ship-form button {
+  margin-top: 5px;
+  padding: 5px;
 }
 
 #ship-list {
@@ -41,6 +92,9 @@ body {
 #ship-list li:hover {
   background-color: #444;
 }
+
+/* griglia mappa */
+
 .grid {
   border-collapse: collapse;
   width: 100%;
@@ -48,14 +102,23 @@ body {
 }
 
 .cell {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border: 1px solid #555;
   text-align: center;
   vertical-align: middle;
-  font-size: 24px;
+  font-size: 20px;
 }
 
+/* celle che contengono una nave */
+
 .cell.ship {
-  background-color: rgba(255,255,255,0.1);
+  background-color: rgba(255, 255, 255, 0.08);
 }
+
+/* qui in futuro potrai mettere le immagini diverse per tipo di nave */
+.cell.ship-type-1 { }
+.cell.ship-type-2 { }
+.cell.ship-type-3 { }
+.cell.ship-type-4 { }
+.cell.ship-type-5 { }

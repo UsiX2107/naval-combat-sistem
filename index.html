@@ -6,16 +6,59 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Naval Combat Helper  2TEST</h1>
+  <h1>Naval Combat Helper</h1>
+  <p>Tool per creare navi, vedere la mappa e gestire i turni.</p>
 
-  <p>Se vedi questa scritta, l'index.html funziona e GitHub Pages sta caricando la pagina giusta.</p>
+  <div id="top-bar">
+    <span id="mode-label">Modalità: Creazione</span>
+    <span id="turn-label"></span>
+  </div>
 
   <div id="app">
-    <div id="map-container">
-      QUI ANDRÀ LA MAPPA 2D
-    </div>
+    <div id="map-container"></div>
 
     <div id="sidebar">
+      <div id="mode-buttons">
+        <button id="setup-mode-btn">Modalità creazione</button>
+        <button id="battle-mode-btn">Modalità battaglia</button>
+      </div>
+
+      <h2>Crea nave</h2>
+      <form id="ship-form">
+        <label>
+          Nome:
+          <input type="text" id="ship-name" required>
+        </label>
+
+        <label>
+          Tipo:
+          <select id="ship-type">
+            <option value="1">Tipo 1</option>
+            <option value="2">Tipo 2</option>
+            <option value="3">Tipo 3</option>
+            <option value="4">Tipo 4</option>
+            <option value="5">Tipo 5</option>
+          </select>
+        </label>
+
+        <label>
+          X:
+          <input type="number" id="ship-x" min="0">
+        </label>
+
+        <label>
+          Y:
+          <input type="number" id="ship-y" min="0">
+        </label>
+
+        <label>
+          HP max:
+          <input type="number" id="ship-maxhp" min="1" value="30">
+        </label>
+
+        <button type="submit">Aggiungi nave</button>
+      </form>
+
       <h2>Navi</h2>
       <ul id="ship-list"></ul>
 
@@ -23,6 +66,10 @@
       <div id="ship-details">
         Seleziona una nave per vedere i dettagli.
       </div>
+
+      <button id="next-turn-btn" style="display:none;margin-top:10px;">
+        Prossimo turno
+      </button>
     </div>
   </div>
 

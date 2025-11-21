@@ -1,37 +1,115 @@
+const typeIcons = {
+  1: "🚢",
+  2: "⛵",
+  3: "🚤",
+  4: "🛳️",
+  5: "⚓"
+};
+
+let nextShipId = 1;
+
 const gameState = {
+  mode: "setup", // "setup" o "battle"
   map: {
-    width: 10,
-    height: 8,
+    width: 20,
+    height: 15
   },
-  ships: [
-    {
-      id: "ship1",
-      name: "La Vergine del Mare",
-      x: 2,
-      y: 3,
-      hp: 30,
-      maxHp: 30,
-    },
-    {
-      id: "ship2",
-      name: "L'Abisso",
-      x: 5,
-      y: 2,
-      hp: 40,
-      maxHp: 40,
-    }
-  ]
+  ships: [],
+  turn: {
+    order: [],
+    currentIndex: 0
+  }
 };
 
 function init() {
+  bindUI();
   renderGrid();
+  renderAll();
+}
+
+function bindUI() {
+  const form = document.getElementById("ship-form");
+  form.addEventListener("submit", onShipFormSubmit);
+
+  document
+    .getElementById("setup-mode-btn")
+    .addEventListener("click", () => setMode("setup"));
+
+  document
+    .getElementById("battle-mode-btn")
+    .addEventListener("click", () => setMode("battle"));
+
+  document
+    .getElementById("next-turn-btn")
+    .addEventListener("click", nextTurn);
+}
+
+function setMode(mode) {
+  gameState.mode = mode;
+
+  if (mode === "battle") {
+    if (gameState.turn.order.length === 0) {
+      gameState.turn.order = gameState.ships.map(s => s.id);
+      gameState.turn.currentIndex = 0;
+    }
+  }
+
+  renderMode();
+  renderTurn();
+}
+
+function onShipFormSubmit(event) {
+  event.preventDefault();
+
+  const nameInput = document.getElementById("ship-name");
+  const typeSelect = document.getElementById("ship-type");
+  const xInput = document.getElementById("ship-x");
+  const yInput = document.getElementById("ship-y");
+  const maxHpInput = document.getElementById("ship-maxhp");
+
+  const mapW = gameState.map.width;
+  const mapH = gameState.map.height;
+
+  let x = parseInt(xInput.value, 10);
+  let y = parseInt(yInput.value, 10);
+
+  if (isNaN(x) || x < 0 || x >= mapW) x = 0;
+  if (isNaN(y) || y < 0 || y >= mapH) y = 0;
+
+  const maxHp = parseInt(maxHpInput.value, 10) || 30;
+
+  const ship = {
+    id: "ship" + nextShipId++,
+    name: nameInput.value || "Nave " + nextShipId,
+    type: parseInt(typeSelect.value, 10),
+    x,
+    y,
+    hp: maxHp,
+    maxHp
+  };
+
+  gameState.ships.push(ship);
+  gameState.turn.order = gameState.ships.map(s => s.id);
+
+  nameInput.value = "";
+  xInput.value = "";
+  yInput.value = "";
+  maxHpInput.value = "30";
+
+  renderAll();
+}
+
+function renderAll() {
+  clearGrid();
   renderShips();
   renderShipList();
+  renderMode();
+  renderTurn();
 }
 
 function renderGrid() {
   const map = document.getElementById("map-container");
-  map.innerHTML = ""; // Pulisce
+  map.innerHTML = "";
 
   const table = document.createElement("table");
   table.classList.add("grid");
@@ -44,7 +122,6 @@ function renderGrid() {
       cell.classList.add("cell");
       cell.dataset.x = x;
       cell.dataset.y = y;
-
       row.appendChild(cell);
     }
 
@@ -54,14 +131,32 @@ function renderGrid() {
   map.appendChild(table);
 }
 
+function clearGrid() {
+  const cells = document.querySelectorAll(".cell");
+  cells.forEach(cell => {
+    cell.textContent = "";
+    cell.classList.remove(
+      "ship",
+      "ship-type-1",
+      "ship-type-2",
+      "ship-type-3",
+      "ship-type-4",
+      "ship-type-5"
+    );
+  });
+}
+
 function renderShips() {
   gameState.ships.forEach(ship => {
-    const cell = document.querySelector(
-      `.cell[data-x="${ship.x}"][data-y="${ship.y}"]`
-    );
+    const selector = `.cell[data-x="${ship.x}"][data-y="${ship.y}"]`;
+    const cell = document.querySelector(selector);
     if (cell) {
-      cell.textContent = "🚢";
-      cell.classList.add("ship");
+      const icon = typeIcons[ship.type] || "🚢";
+      cell.textContent = icon;
+      cell.classList.add("ship", `ship-type-${ship.type}`);
+      cell.addEventListener("click", () => {
+        showShipDetails(ship);
+      });
     }
   });
 }
@@ -84,9 +179,56 @@ function showShipDetails(ship) {
   const details = document.getElementById("ship-details");
   details.innerHTML = `
     <h3>${ship.name}</h3>
+    <p>Tipo: ${ship.type}</p>
     <p>Posizione: (${ship.x}, ${ship.y})</p>
     <p>HP: ${ship.hp} / ${ship.maxHp}</p>
   `;
+}
+
+function renderMode() {
+  const label = document.getElementById("mode-label");
+  const nextTurnBtn = document.getElementById("next-turn-btn");
+
+  if (gameState.mode === "setup") {
+    label.textContent = "Modalità: Creazione";
+    nextTurnBtn.style.display = "none";
+  } else {
+    label.textContent = "Modalità: Battaglia";
+    nextTurnBtn.style.display =
+      gameState.ships.length > 0 ? "block" : "none";
+  }
+}
+
+function renderTurn() {
+  const el = document.getElementById("turn-label");
+
+  if (gameState.mode !== "battle" || gameState.ships.length === 0) {
+    el.textContent = "";
+    return;
+  }
+
+  const orderNames = gameState.turn.order
+    .map(id => gameState.ships.find(s => s.id === id))
+    .filter(Boolean)
+    .map(s => s.name)
+    .join(" → ");
+
+  const currentId =
+    gameState.turn.order[gameState.turn.currentIndex] || null;
+  const currentShip = gameState.ships.find(s => s.id === currentId);
+
+  if (currentShip) {
+    el.textContent = `Turno: ${currentShip.name} | Ordine: ${orderNames}`;
+  } else {
+    el.textContent = `Ordine: ${orderNames}`;
+  }
+}
+
+function nextTurn() {
+  if (gameState.turn.order.length === 0) return;
+  gameState.turn.currentIndex =
+    (gameState.turn.currentIndex + 1) % gameState.turn.order.length;
+  renderTurn();
 }
 
 window.addEventListener("DOMContentLoaded", init);
