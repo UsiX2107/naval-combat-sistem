@@ -154,7 +154,7 @@ fieldset {
 /* classi per tipo di nave – future immagini */
 
 .cell.ship-type-1 {
-  background-image: url("img/Sloop.png");
+  background-image: url("img/Sloop.jpeg");
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
