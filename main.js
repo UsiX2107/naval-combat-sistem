@@ -16,7 +16,7 @@ const gameState = {
       id: "ship2",
       name: "L'Abisso",
       x: 5,
-      y: 6,
+      y: 2,
       hp: 40,
       maxHp: 40,
     }
@@ -24,7 +24,46 @@ const gameState = {
 };
 
 function init() {
+  renderGrid();
+  renderShips();
   renderShipList();
+}
+
+function renderGrid() {
+  const map = document.getElementById("map-container");
+  map.innerHTML = ""; // Pulisce
+
+  const table = document.createElement("table");
+  table.classList.add("grid");
+
+  for (let y = 0; y < gameState.map.height; y++) {
+    const row = document.createElement("tr");
+
+    for (let x = 0; x < gameState.map.width; x++) {
+      const cell = document.createElement("td");
+      cell.classList.add("cell");
+      cell.dataset.x = x;
+      cell.dataset.y = y;
+
+      row.appendChild(cell);
+    }
+
+    table.appendChild(row);
+  }
+
+  map.appendChild(table);
+}
+
+function renderShips() {
+  gameState.ships.forEach(ship => {
+    const cell = document.querySelector(
+      `.cell[data-x="${ship.x}"][data-y="${ship.y}"]`
+    );
+    if (cell) {
+      cell.textContent = "🚢";
+      cell.classList.add("ship");
+    }
+  });
 }
 
 function renderShipList() {
