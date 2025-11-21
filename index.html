@@ -7,7 +7,7 @@
 </head>
 <body>
   <h1>Naval Combat Helper</h1>
-  <p>Tool per creare navi, vedere la mappa e gestire i turni 2.</p>
+  <p>Tool per creare navi, vedere la mappa e gestire i turni.</p>
 
   <div id="top-bar">
     <span id="mode-label">Modalità: Creazione</span>
@@ -23,41 +23,80 @@
         <button id="battle-mode-btn">Modalità battaglia</button>
       </div>
 
-      <h2>Crea nave</h2>
-      <form id="ship-form">
-        <label>
-          Nome:
-          <input type="text" id="ship-name" required>
-        </label>
+      <!-- PANNELLO CREAZIONE NAVE -->
+      <div id="creation-panel">
+        <h2>Crea nave</h2>
+        <form id="ship-form">
+          <label>
+            Nome:
+            <input type="text" id="ship-name">
+          </label>
 
-        <label>
-          Tipo:
-          <select id="ship-type">
-            <option value="1">Tipo 1</option>
-            <option value="2">Tipo 2</option>
-            <option value="3">Tipo 3</option>
-            <option value="4">Tipo 4</option>
-            <option value="5">Tipo 5</option>
-          </select>
-        </label>
+          <label>
+            Tipo:
+            <select id="ship-type">
+              <option value="1">Sloop</option>
+              <option value="2">Goletta</option>
+              <option value="3">Brigantino</option>
+              <option value="4">Fregata</option>
+              <option value="5">Galeone</option>
+            </select>
+          </label>
 
-        <label>
-          X:
-          <input type="number" id="ship-x" min="0">
-        </label>
+          <label>
+            Livello (1–5):
+            <select id="ship-level">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+          </label>
 
-        <label>
-          Y:
-          <input type="number" id="ship-y" min="0">
-        </label>
+          <label>
+            Tipo di cannoni:
+            <select id="ship-cannons">
+              <option value="corto">Corto raggio</option>
+              <option value="medio">Medio raggio</option>
+              <option value="lungo">Lungo raggio</option>
+            </select>
+          </label>
 
-        <label>
-          HP max:
-          <input type="number" id="ship-maxhp" min="1" value="30">
-        </label>
+          <label>
+            X:
+            <input type="number" id="ship-x" min="0">
+          </label>
 
-        <button type="submit">Aggiungi nave</button>
-      </form>
+          <label>
+            Y:
+            <input type="number" id="ship-y" min="0">
+          </label>
+
+          <label>
+            HP scafo max:
+            <input type="number" id="ship-maxhp" min="1" value="30">
+          </label>
+
+          <fieldset>
+            <legend>Stiva (palle / legno / cibo)</legend>
+            <label>
+              Palle:
+              <input type="number" id="cargo-balls" min="0">
+            </label>
+            <label>
+              Legno:
+              <input type="number" id="cargo-wood" min="0">
+            </label>
+            <label>
+              Cibo:
+              <input type="number" id="cargo-food" min="0">
+            </label>
+          </fieldset>
+
+          <button type="submit">Aggiungi nave</button>
+        </form>
+      </div>
 
       <h2>Navi</h2>
       <ul id="ship-list"></ul>
