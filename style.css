@@ -153,11 +153,40 @@ fieldset {
 
 /* classi per tipo di nave – future immagini */
 
-.cell.ship-type-1 { }
-.cell.ship-type-2 { }
-.cell.ship-type-3 { }
-.cell.ship-type-4 { }
-.cell.ship-type-5 { }
+.cell.ship-type-1 {
+  background-image: url("img/Sloop.png");
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.cell.ship-type-2 {
+  background-image: url("img/Goletta.png");
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.cell.ship-type-3 {
+  background-image: url("img/Brigantino.png");
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.cell.ship-type-4 {
+  background-image: url("img/Fregata.png");
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.cell.ship-type-5 {
+  background-image: url("img/Galeone.png");
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
 
 /* tabella ruoli */
 
