@@ -6,10 +6,22 @@ const typeIcons = {
   5: "⚓"   // Galeone (placeholder)
 };
 
+const directionArrows = {
+  N: "↑",
+  NE: "↗",
+  E: "→",
+  SE: "↘",
+  S: "↓",
+  SW: "↙",
+  W: "←",
+  NW: "↖"
+};
+
 let nextShipId = 1;
 
 const gameState = {
   mode: "setup", // "setup" o "battle"
+  battleMode: "duello",
   map: {
     width: 20,
     height: 15
@@ -42,6 +54,32 @@ function bindUI() {
   document
     .getElementById("next-turn-btn")
     .addEventListener("click", nextTurn);
+
+  // battle sub-modes
+  const battleModeButtons = document.querySelectorAll(".battle-mode-btn");
+  battleModeButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const mode = btn.dataset.mode;
+      setBattleMode(mode);
+    });
+  });
+
+  // team color picker
+  const colorButtons = document.querySelectorAll(".team-color-option");
+  const hidden = document.getElementById("team-color");
+  colorButtons.forEach(btn => {
+    const color = btn.dataset.color;
+    btn.style.backgroundColor = color;
+    btn.addEventListener("click", () => {
+      hidden.value = color;
+      colorButtons.forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+    });
+  });
+  // selezione di default
+  if (colorButtons[0]) {
+    colorButtons[0].click();
+  }
 }
 
 function setMode(mode) {
@@ -58,13 +96,23 @@ function setMode(mode) {
   renderTurn();
 }
 
+function setBattleMode(mode) {
+  gameState.battleMode = mode;
+  renderBattleMode();
+}
+
 function onShipFormSubmit(event) {
   event.preventDefault();
 
   const nameInput = document.getElementById("ship-name");
+  const teamNameInput = document.getElementById("team-name");
+  const teamColorInput = document.getElementById("team-color");
+  const autoCheckbox = document.getElementById("ship-auto");
+
   const typeSelect = document.getElementById("ship-type");
   const levelSelect = document.getElementById("ship-level");
   const cannonSelect = document.getElementById("ship-cannons");
+  const dirSelect = document.getElementById("ship-direction");
   const xInput = document.getElementById("ship-x");
   const yInput = document.getElementById("ship-y");
 
@@ -99,10 +147,15 @@ function onShipFormSubmit(event) {
   const type = parseInt(typeSelect?.value, 10) || 1;
   const level = parseInt(levelSelect?.value, 10) || 1;
   const cannonType = cannonSelect?.value || "corto";
+  const direction = dirSelect?.value || "N";
 
   const balls = parseInt(cargoBallsInput?.value, 10) || 0;
   const wood = parseInt(cargoWoodInput?.value, 10) || 0;
   const food = parseInt(cargoFoodInput?.value, 10) || 0;
+
+  const teamName = teamNameInput?.value || "";
+  const teamColor = teamColorInput?.value || "#ffffff";
+  const automatic = !!autoCheckbox?.checked;
 
   const id = "ship" + nextShipId++;
 
@@ -119,9 +172,7 @@ function onShipFormSubmit(event) {
     let value = defaultRoleHp;
     if (input && input.value !== "") {
       const v = parseInt(input.value, 10);
-      if (!isNaN(v) && v >= 0) {
-        value = v;
-      }
+      if (!isNaN(v) && v >= 0) value = v;
     }
     roles.push({
       id: i + 1,
@@ -131,18 +182,21 @@ function onShipFormSubmit(event) {
     });
   }
 
-  // Macchine d'assedio: fino a 3 slot, nessun limite sul tipo
-  const siegeMachines = siegeSelects.map(sel => {
-    if (!sel) return null;
-    return sel.value || null; // null = slot vuoto
-  });
+  // Macchine d'assedio: nessun limite su quali, solo tre slot
+  const siegeMachines = siegeSelects.map(sel =>
+    sel ? (sel.value || null) : null
+  );
 
   const ship = {
     id,
     name: nameInput?.value || `Nave ${id}`,
+    teamName,
+    teamColor,
+    automatic,
     type,
     level,
     cannonType,
+    direction,
     x,
     y,
     cd,
@@ -153,7 +207,6 @@ function onShipFormSubmit(event) {
       wood,
       food
     },
-    siegeSlots: siegeMachines.length,
     siegeMachines,
     roles
   };
@@ -163,13 +216,16 @@ function onShipFormSubmit(event) {
 
   // pulizia form
   if (nameInput) nameInput.value = "";
+  if (teamNameInput) teamNameInput.value = "";
   if (levelSelect) levelSelect.value = "1";
   if (cannonSelect) cannonSelect.value = "corto";
+  if (dirSelect) dirSelect.value = "N";
   if (xInput) xInput.value = "";
   if (yInput) yInput.value = "";
   if (cargoBallsInput) cargoBallsInput.value = "";
   if (cargoWoodInput) cargoWoodInput.value = "";
   if (cargoFoodInput) cargoFoodInput.value = "";
+  if (autoCheckbox) autoCheckbox.checked = false;
   roleHpInputs.forEach(input => {
     if (input) input.value = "";
   });
@@ -185,6 +241,7 @@ function renderAll() {
   renderShips();
   renderShipList();
   renderMode();
+  renderBattleMode();
   renderTurn();
 }
 
@@ -218,6 +275,7 @@ function clearGrid() {
     cell.innerHTML = "";
     cell.className = "cell";
     cell.onclick = null;
+    cell.removeAttribute("title");
   });
 }
 
@@ -227,13 +285,29 @@ function renderShips() {
     const cell = document.querySelector(selector);
     if (cell) {
       const icon = typeIcons[ship.type] || "🚢";
+      const arrow = directionArrows[ship.direction] || "";
+
       cell.innerHTML = `
         <div class="ship-cell-content">
+          <span class="ship-icon">${icon}</span>
+          <span class="ship-direction-arrow">${arrow}</span>
           <span class="ship-level-badge">Lv${ship.level}</span>
         </div>
       `;
       cell.classList.add("ship", `ship-type-${ship.type}`);
       cell.onclick = () => showShipDetails(ship);
+
+      // tooltip nome nave + team
+      const tooltipName = ship.teamName
+        ? `${ship.name} [${ship.teamName}]`
+        : ship.name;
+      cell.title = tooltipName;
+
+      // bordo colorato per team
+      const content = cell.querySelector(".ship-cell-content");
+      if (content) {
+        content.style.borderColor = ship.teamColor || "#ffffff";
+      }
     }
   });
 }
@@ -244,7 +318,9 @@ function renderShipList() {
 
   gameState.ships.forEach(ship => {
     const li = document.createElement("li");
-    li.textContent = ship.name;
+    li.textContent = ship.teamName
+      ? `${ship.name} (${ship.teamName})`
+      : ship.name;
     li.addEventListener("click", () => {
       showShipDetails(ship);
     });
@@ -285,11 +361,16 @@ function showShipDetails(ship) {
     })
     .join("");
 
+  const automaticLabel = ship.automatic ? "Sì" : "No";
+
   details.innerHTML = `
     <h3>${ship.name}</h3>
+    <p>Team: ${ship.teamName || "-"} &nbsp; <span style="display:inline-block;width:10px;height:10px;background:${ship.teamColor};border:1px solid #fff;"></span></p>
+    <p>Automatico: ${automaticLabel}</p>
     <p>Tipo: ${typeName}</p>
     <p>Livello: ${ship.level}</p>
     <p>Tipo cannoni: ${ship.cannonType}</p>
+    <p>Direzione: ${ship.direction}</p>
     <p>Posizione: (${ship.x}, ${ship.y})</p>
     <p>CD: ${ship.cd} | CA: ${ship.ca} | PF: ${ship.pf}</p>
 
@@ -362,6 +443,18 @@ function renderMode() {
       gameState.ships.length > 0 ? "block" : "none";
     if (creationPanel) creationPanel.style.display = "none";
   }
+}
+
+function renderBattleMode() {
+  const buttons = document.querySelectorAll(".battle-mode-btn");
+  buttons.forEach(btn => {
+    btn.classList.toggle(
+      "active",
+      btn.dataset.mode === gameState.battleMode
+    );
+    // se vuoi, puoi disabilitare i bottoni in modalità creazione:
+    // btn.disabled = gameState.mode !== "battle";
+  });
 }
 
 function renderTurn() {

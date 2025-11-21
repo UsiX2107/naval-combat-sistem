@@ -23,13 +23,48 @@
         <button id="battle-mode-btn">Modalità battaglia</button>
       </div>
 
+      <div id="battle-modes">
+        <span>Modalità battaglia:</span>
+        <button class="battle-mode-btn" data-mode="duello">Duello</button>
+        <button class="battle-mode-btn" data-mode="schermaglia">Schermaglia</button>
+        <button class="battle-mode-btn" data-mode="inseguimento">Inseguimento</button>
+        <button class="battle-mode-btn" data-mode="sbarco">Sbarco</button>
+      </div>
+
       <!-- PANNELLO CREAZIONE NAVE -->
       <div id="creation-panel">
         <h2>Crea nave</h2>
         <form id="ship-form">
-          <label>
-            Nome:
-            <input type="text" id="ship-name">
+          <div class="row">
+            <label class="flex-1">
+              Nome:
+              <input type="text" id="ship-name">
+            </label>
+
+            <label class="flex-1">
+              Team:
+              <input type="text" id="team-name" placeholder="es. Blu, Pirati...">
+            </label>
+          </div>
+
+          <div id="team-color-wrapper">
+            <span>Colore team:</span>
+            <div id="team-color-picker">
+              <button type="button" class="team-color-option" data-color="#ff4b4b"></button>
+              <button type="button" class="team-color-option" data-color="#ffb84b"></button>
+              <button type="button" class="team-color-option" data-color="#ffe84b"></button>
+              <button type="button" class="team-color-option" data-color="#4bff4b"></button>
+              <button type="button" class="team-color-option" data-color="#4bb8ff"></button>
+              <button type="button" class="team-color-option" data-color="#b84bff"></button>
+              <button type="button" class="team-color-option" data-color="#ffffff"></button>
+              <button type="button" class="team-color-option" data-color="#aaaaaa"></button>
+            </div>
+            <input type="hidden" id="team-color" value="#ffffff">
+          </div>
+
+          <label class="checkbox-row">
+            <input type="checkbox" id="ship-auto">
+            Automatico
           </label>
 
           <label>
@@ -64,14 +99,30 @@
           </label>
 
           <label>
-            X:
-            <input type="number" id="ship-x" min="0">
+            Direzione iniziale:
+            <select id="ship-direction">
+              <option value="N">N</option>
+              <option value="NE">NE</option>
+              <option value="E">E</option>
+              <option value="SE">SE</option>
+              <option value="S">S</option>
+              <option value="SW">SW</option>
+              <option value="W">W</option>
+              <option value="NW">NW</option>
+            </select>
           </label>
 
-          <label>
-            Y:
-            <input type="number" id="ship-y" min="0">
-          </label>
+          <div class="row">
+            <label class="flex-1">
+              X:
+              <input type="number" id="ship-x" min="0">
+            </label>
+
+            <label class="flex-1">
+              Y:
+              <input type="number" id="ship-y" min="0">
+            </label>
+          </div>
 
           <fieldset>
             <legend>Stiva (palle / legno / cibo)</legend>
@@ -118,7 +169,7 @@
           </fieldset>
 
           <fieldset>
-            <legend>Macchine d'assedio (max in base al tipo)</legend>
+            <legend>Macchine d'assedio</legend>
             <label>
               Slot 1:
               <select id="siege-slot-1">
