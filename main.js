@@ -229,7 +229,6 @@ function renderShips() {
       const icon = typeIcons[ship.type] || "🚢";
       cell.innerHTML = `
         <div class="ship-cell-content">
-          <span class="ship-icon">${icon}</span>
           <span class="ship-level-badge">Lv${ship.level}</span>
         </div>
       `;
