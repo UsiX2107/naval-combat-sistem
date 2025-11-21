@@ -67,10 +67,25 @@ function onShipFormSubmit(event) {
   const cannonSelect = document.getElementById("ship-cannons");
   const xInput = document.getElementById("ship-x");
   const yInput = document.getElementById("ship-y");
-  const maxHpInput = document.getElementById("ship-maxhp");
+
   const cargoBallsInput = document.getElementById("cargo-balls");
   const cargoWoodInput = document.getElementById("cargo-wood");
   const cargoFoodInput = document.getElementById("cargo-food");
+
+  const roleHpInputs = [
+    document.getElementById("role1-hp"),
+    document.getElementById("role2-hp"),
+    document.getElementById("role3-hp"),
+    document.getElementById("role4-hp"),
+    document.getElementById("role5-hp"),
+    document.getElementById("role6-hp")
+  ];
+
+  const siegeSelects = [
+    document.getElementById("siege-slot-1"),
+    document.getElementById("siege-slot-2"),
+    document.getElementById("siege-slot-3")
+  ];
 
   const mapW = gameState.map.width;
   const mapH = gameState.map.height;
@@ -81,7 +96,6 @@ function onShipFormSubmit(event) {
   if (isNaN(x) || x < 0 || x >= mapW) x = 0;
   if (isNaN(y) || y < 0 || y >= mapH) y = 0;
 
-  const maxHp = parseInt(maxHpInput.value, 10) || 30;
   const type = parseInt(typeSelect.value, 10);
   const level = parseInt(levelSelect.value, 10) || 1;
   const cannonType = cannonSelect.value;
@@ -91,17 +105,35 @@ function onShipFormSubmit(event) {
   const food = parseInt(cargoFoodInput.value, 10) || 0;
 
   const id = "ship" + nextShipId++;
-  const defaultRoleHp = 30 * level;
-  const siegeSlots = type <= 2 ? 1 : (type <= 4 ? 2 : 3);
 
+  const cd = 8 + 2 * level;
+  const ca = 8 + 2 * type;
+  const pf = 400 * level * type;
+
+  const defaultRoleHp = 30 * level;
   const roles = [];
-  for (let i = 1; i <= 6; i++) {
+  for (let i = 0; i < 6; i++) {
+    let value = parseInt(roleHpInputs[i].value, 10);
+    if (isNaN(value) || value < 0) {
+      value = defaultRoleHp;
+    }
     roles.push({
-      id: i,
-      name: "Ruolo " + i,
-      hp: defaultRoleHp,
-      maxHp: defaultRoleHp
+      id: i + 1,
+      name: "Ruolo " + (i + 1),
+      hp: value,
+      maxHp: value
     });
+  }
+
+  const siegeSlots = type <= 2 ? 1 : (type <= 4 ? 2 : 3);
+  const siegeMachines = [];
+  for (let i = 0; i < siegeSlots; i++) {
+    const val = siegeSelects[i].value;
+    if (val) {
+      siegeMachines.push(val);
+    } else {
+      siegeMachines.push(null); // slot vuoto
+    }
   }
 
   const ship = {
@@ -112,15 +144,16 @@ function onShipFormSubmit(event) {
     cannonType,
     x,
     y,
-    hp: maxHp,
-    maxHp,
+    cd,
+    ca,
+    pf,
     cargo: {
       balls,
       wood,
       food
     },
     siegeSlots,
-    siegeMachines: [],
+    siegeMachines,
     roles
   };
 
@@ -132,10 +165,11 @@ function onShipFormSubmit(event) {
   cannonSelect.value = "corto";
   xInput.value = "";
   yInput.value = "";
-  maxHpInput.value = "30";
   cargoBallsInput.value = "";
   cargoWoodInput.value = "";
   cargoFoodInput.value = "";
+  roleHpInputs.forEach(input => (input.value = ""));
+  siegeSelects.forEach(select => (select.value = ""));
 
   renderAll();
 }
@@ -239,22 +273,29 @@ function showShipDetails(ship) {
     })
     .join("");
 
+  const siegeList = ship.siegeMachines
+    .map((m, idx) => {
+      if (!m) return `<li>Slot ${idx + 1}: vuoto</li>`;
+      return `<li>Slot ${idx + 1}: ${m}</li>`;
+    })
+    .join("");
+
   details.innerHTML = `
     <h3>${ship.name}</h3>
     <p>Tipo: ${typeName}</p>
     <p>Livello: ${ship.level}</p>
     <p>Tipo cannoni: ${ship.cannonType}</p>
     <p>Posizione: (${ship.x}, ${ship.y})</p>
-    <p>HP scafo: ${ship.hp} / ${ship.maxHp}</p>
+    <p>CD: ${ship.cd} | CA: ${ship.ca} | PF: ${ship.pf}</p>
 
     <h4>Stiva</h4>
     <p>Palle: ${ship.cargo.balls} | Legno: ${ship.cargo.wood} | Cibo: ${ship.cargo.food}</p>
 
     <h4>Macchine d'assedio</h4>
     <p>Slot disponibili: ${ship.siegeSlots}</p>
-    <div id="siege-machines">
-      <!-- in futuro: elenco delle macchine d'assedio -->
-    </div>
+    <ul>
+      ${siegeList}
+    </ul>
 
     <h4>Ruoli (PF)</h4>
     <table class="roles-table">
