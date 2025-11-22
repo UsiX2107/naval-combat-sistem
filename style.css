@@ -235,43 +235,43 @@ fieldset {
   font-size: 10px;
 }
 
-/* classi per tipo di nave – QUI ci metti le tue immagini */
-/* classi per tipo di nave – future immagini */
+/* classi per tipo di nave – QUI usi le tue immagini */
 
 .cell.ship-type-1 {
-  background-image: url("img/Sloop.jpeg");
+  background-image: url("img/sloop.png");
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
 }
 
 .cell.ship-type-2 {
-  background-image: url("img/Goletta.png");
+  background-image: url("img/goletta.png");
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
 }
 
 .cell.ship-type-3 {
-  background-image: url("img/Brigantino.png");
+  background-image: url("img/brigantino.png");
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
 }
 
 .cell.ship-type-4 {
-  background-image: url("img/Fregata.png");
+  background-image: url("img/fregata.png");
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
 }
 
 .cell.ship-type-5 {
-  background-image: url("img/Galeone.png");
+  background-image: url("img/galeone.png");
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
 }
+
 /* tabella ruoli */
 
 .roles-table {
@@ -287,4 +287,23 @@ fieldset {
 
 .roles-table input[type="number"] {
   width: 60px;
+}
+
+/* PANNELLO RUOLO / TIMONIERE */
+
+#role-panel {
+  border-top: 1px solid #444;
+  padding-top: 5px;
+  font-size: 12px;
+}
+
+.role-form {
+  margin-top: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hidden {
+  display: none;
 }

@@ -223,6 +223,55 @@
         Seleziona una nave per vedere i dettagli.
       </div>
 
+      <h2>Ruolo: Timoniere</h2>
+      <div id="role-panel">
+        <p id="role-info">Passa in modalità battaglia per usare il timoniere.</p>
+
+        <div id="role-actions" class="hidden">
+          <p id="role-ship-label"></p>
+          <button id="helm-move-btn">Movimento</button>
+          <button id="helm-ca-btn">CA</button>
+
+          <div id="helm-move-form" class="role-form hidden">
+            <label>
+              Nuova X:
+              <input type="number" id="helm-x" min="0">
+            </label>
+            <label>
+              Nuova Y:
+              <input type="number" id="helm-y" min="0">
+            </label>
+            <label>
+              Direzione:
+              <select id="helm-direction">
+                <option value="N">N</option>
+                <option value="NE">NE</option>
+                <option value="E">E</option>
+                <option value="SE">SE</option>
+                <option value="S">S</option>
+                <option value="SW">SW</option>
+                <option value="W">W</option>
+                <option value="NW">NW</option>
+              </select>
+            </label>
+            <label>
+              Valore:
+              <input type="number" id="helm-value" min="0">
+            </label>
+            <button type="button" id="helm-move-confirm">Applica movimento</button>
+          </div>
+
+          <div id="helm-ca-form" class="role-form hidden">
+            <label>
+              Valore:
+              <input type="number" id="helm-ca-value" min="0">
+            </label>
+            <button type="button" id="helm-ca-confirm">Applica CA</button>
+            <p id="helm-ca-result"></p>
+          </div>
+        </div>
+      </div>
+
       <button id="next-turn-btn" style="display:none;margin-top:10px;">
         Prossimo turno
       </button>

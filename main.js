@@ -9,6 +9,17 @@ const directionArrows = {
   NW: "↖"
 };
 
+const directionOffsets = {
+  N: [0, -1],
+  NE: [1, -1],
+  E: [1, 0],
+  SE: [1, 1],
+  S: [0, 1],
+  SW: [-1, 1],
+  W: [-1, 0],
+  NW: [-1, -1]
+};
+
 let nextShipId = 1;
 
 const gameState = {
@@ -68,9 +79,108 @@ function bindUI() {
       btn.classList.add("selected");
     });
   });
-  // selezione di default
   if (colorButtons[0]) {
     colorButtons[0].click();
+  }
+
+  // TIMONIERE: bottoni e form
+  const moveBtn = document.getElementById("helm-move-btn");
+  const caBtn = document.getElementById("helm-ca-btn");
+  const moveConfirm = document.getElementById("helm-move-confirm");
+  const caConfirm = document.getElementById("helm-ca-confirm");
+
+  if (moveBtn) {
+    moveBtn.addEventListener("click", () => {
+      const moveForm = document.getElementById("helm-move-form");
+      const caForm = document.getElementById("helm-ca-form");
+      moveForm.classList.remove("hidden");
+      caForm.classList.add("hidden");
+
+      const ship = getCurrentTurnShip();
+      const xInput = document.getElementById("helm-x");
+      const yInput = document.getElementById("helm-y");
+      const dirInput = document.getElementById("helm-direction");
+      const valInput = document.getElementById("helm-value");
+      if (ship) {
+        xInput.value = ship.x;
+        yInput.value = ship.y;
+        dirInput.value = ship.direction;
+        valInput.value = "";
+      }
+    });
+  }
+
+  if (caBtn) {
+    caBtn.addEventListener("click", () => {
+      const moveForm = document.getElementById("helm-move-form");
+      const caForm = document.getElementById("helm-ca-form");
+      moveForm.classList.add("hidden");
+      caForm.classList.remove("hidden");
+
+      const valInput = document.getElementById("helm-ca-value");
+      const result = document.getElementById("helm-ca-result");
+      valInput.value = "";
+      result.textContent = "";
+    });
+  }
+
+  if (moveConfirm) {
+    moveConfirm.addEventListener("click", () => {
+      const ship = getCurrentTurnShip();
+      if (!ship) return;
+
+      const xInput = document.getElementById("helm-x");
+      const yInput = document.getElementById("helm-y");
+      const dirInput = document.getElementById("helm-direction");
+      const valInput = document.getElementById("helm-value");
+
+      let newX = parseInt(xInput.value, 10);
+      let newY = parseInt(yInput.value, 10);
+      const dir = dirInput.value || ship.direction;
+      let value = parseInt(valInput.value, 10);
+      if (isNaN(value) || value < 0) value = 0;
+
+      const mapW = gameState.map.width;
+      const mapH = gameState.map.height;
+      if (isNaN(newX) || newX < 0 || newX >= mapW) newX = ship.x;
+      if (isNaN(newY) || newY < 0 || newY >= mapH) newY = ship.y;
+
+      ship.x = newX;
+      ship.y = newY;
+      ship.direction = dir;
+
+      // Danno da rostro, se presente
+      applyRostroDamage(ship, value);
+
+      renderAll();
+      showShipDetails(ship);
+    });
+  }
+
+  if (caConfirm) {
+    caConfirm.addEventListener("click", () => {
+      const ship = getCurrentTurnShip();
+      if (!ship) return;
+
+      const valInput = document.getElementById("helm-ca-value");
+      const result = document.getElementById("helm-ca-result");
+      let value = parseInt(valInput.value, 10);
+      if (isNaN(value) || value < 0) value = 0;
+
+      const bonus = getCaModifierFromValue(value);
+      ship.tempCaBonus = bonus;
+
+      if (bonus === 0) {
+        result.textContent = `Nessuna modifica alla CA (valore ${value}).`;
+      } else if (bonus > 0) {
+        result.textContent = `CA aumentata di +${bonus} fino al prossimo turno del timoniere.`;
+      } else {
+        result.textContent = `CA ridotta di ${bonus} (malus) fino al prossimo turno del timoniere.`;
+      }
+
+      renderAll();
+      showShipDetails(ship);
+    });
   }
 }
 
@@ -156,9 +266,10 @@ function onShipFormSubmit(event) {
   const id = "ship" + nextShipId++;
 
   // Stat automatiche
+  const maxPf = 400 * level * type;
+  const pf = maxPf;
   const cd = 8 + 2 * level;
   const ca = 8 + 2 * type;
-  const pf = 400 * level * type;
 
   // PF ruoli: se vuoto -> 30 * livello
   const defaultRoleHp = 30 * level;
@@ -198,6 +309,8 @@ function onShipFormSubmit(event) {
     cd,
     ca,
     pf,
+    maxPf,
+    tempCaBonus: 0,
     cargo: {
       balls,
       wood,
@@ -357,6 +470,8 @@ function showShipDetails(ship) {
 
   const automaticLabel = ship.automatic ? "Sì" : "No";
 
+  const effectiveCa = ship.ca + (ship.tempCaBonus || 0);
+
   details.innerHTML = `
     <h3>${ship.name}</h3>
     <p>Team: ${ship.teamName || "-"} &nbsp; <span style="display:inline-block;width:10px;height:10px;background:${ship.teamColor};border:1px solid #fff;"></span></p>
@@ -366,7 +481,7 @@ function showShipDetails(ship) {
     <p>Tipo cannoni: ${ship.cannonType}</p>
     <p>Direzione: ${ship.direction}</p>
     <p>Posizione: (${ship.x}, ${ship.y})</p>
-    <p>CD: ${ship.cd} | CA: ${ship.ca} | PF: ${ship.pf}</p>
+    <p>CD: ${ship.cd} | CA: ${effectiveCa} (base ${ship.ca}${ship.tempCaBonus ? (ship.tempCaBonus > 0 ? " +" + ship.tempCaBonus : " " + ship.tempCaBonus) : ""}) | PF: ${ship.pf} / ${ship.maxPf}</p>
 
     <h4>Stiva</h4>
     <p>Palle: ${ship.cargo.balls} | Legno: ${ship.cargo.wood} | Cibo: ${ship.cargo.food}</p>
@@ -444,7 +559,6 @@ function renderBattleMode() {
   buttons.forEach(btn => {
     const isActive = btn.dataset.mode === gameState.battleMode;
     btn.classList.toggle("active", isActive);
-    // disabilita i bottoni se non siamo in modalità battaglia
     btn.disabled = (gameState.mode !== "battle");
   });
 }
@@ -454,6 +568,7 @@ function renderTurn() {
 
   if (gameState.mode !== "battle" || gameState.ships.length === 0) {
     el.textContent = "";
+    renderRolePanel(null);
     return;
   }
 
@@ -472,13 +587,88 @@ function renderTurn() {
   } else {
     el.textContent = `Ordine: ${orderNames}`;
   }
+
+  renderRolePanel(currentShip || null);
 }
 
 function nextTurn() {
   if (gameState.turn.order.length === 0) return;
+
+  // fine turno: reset bonus CA del timoniere della nave che sta finendo il turno
+  const prevId = gameState.turn.order[gameState.turn.currentIndex];
+  const prevShip = gameState.ships.find(s => s.id === prevId);
+  if (prevShip) {
+    prevShip.tempCaBonus = 0;
+  }
+
   gameState.turn.currentIndex =
     (gameState.turn.currentIndex + 1) % gameState.turn.order.length;
+
   renderTurn();
+}
+
+function getCurrentTurnShip() {
+  if (gameState.turn.order.length === 0) return null;
+  const currentId = gameState.turn.order[gameState.turn.currentIndex];
+  return gameState.ships.find(s => s.id === currentId) || null;
+}
+
+function renderRolePanel(currentShip) {
+  const info = document.getElementById("role-info");
+  const actions = document.getElementById("role-actions");
+  const label = document.getElementById("role-ship-label");
+
+  if (!info || !actions || !label) return;
+
+  if (gameState.mode !== "battle" || !currentShip) {
+    info.textContent =
+      "Passa in modalità battaglia e assicurati che ci sia almeno una nave per usare il timoniere.";
+    actions.classList.add("hidden");
+    return;
+  }
+
+  info.textContent = "Ruolo interno: Timoniere (1° ruolo della nave).";
+  label.textContent = `Nave di turno: ${currentShip.name}`;
+  actions.classList.remove("hidden");
+}
+
+// --- LOGICA CA / ROSTRO ---
+
+function getCaModifierFromValue(value) {
+  if (value <= 0) return 0;
+  if (value === 1) return -4;
+  if (value >= 2 && value <= 4) return -2;
+  if (value >= 5 && value <= 9) return -1;
+  if (value >= 10 && value <= 14) return 0;
+  if (value >= 15 && value <= 19) return 1;
+  if (value >= 20 && value <= 24) return 2;
+  if (value >= 25 && value <= 29) return 3;
+  if (value >= 30) return 4;
+  return 0;
+}
+
+function shipHasRostro(ship) {
+  return (
+    ship.siegeMachines &&
+    ship.siegeMachines.some(m => m === "rostro")
+  );
+}
+
+function applyRostroDamage(attacker, value) {
+  if (!shipHasRostro(attacker)) return;
+  if (!value || value <= 0) return;
+
+  const [dx, dy] = directionOffsets[attacker.direction] || [0, 0];
+  const targetX = attacker.x + dx;
+  const targetY = attacker.y + dy;
+
+  const target = gameState.ships.find(
+    s => s.id !== attacker.id && s.x === targetX && s.y === targetY
+  );
+  if (!target) return;
+
+  const damage = 10 * attacker.type * value;
+  target.pf = Math.max(0, target.pf - damage);
 }
 
 window.addEventListener("DOMContentLoaded", init);
