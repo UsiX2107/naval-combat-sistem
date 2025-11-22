@@ -452,8 +452,6 @@ function renderBattleMode() {
       "active",
       btn.dataset.mode === gameState.battleMode
     );
-    // se vuoi, puoi disabilitare i bottoni in modalità creazione:
-    // btn.disabled = gameState.mode !== "battle";
   });
 }
 
