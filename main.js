@@ -1,9 +1,9 @@
 const typeIcons = {
-  1: "🚢", // Sloop
-  2: "⛵", // Goletta
-  3: "🚤", // Brigantino (placeholder)
-  4: "🛳️", // Fregata
-  5: "⚓"   // Galeone (placeholder)
+  1: "", // Sloop
+  2: "", // Goletta
+  3: "", // Brigantino (placeholder)
+  4: "", // Fregata
+  5: ""   // Galeone (placeholder)
 };
 
 const directionArrows = {
