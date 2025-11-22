@@ -81,6 +81,11 @@ p {
   background-color: #555;
 }
 
+.battle-mode-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
 #ship-form {
   display: flex;
   flex-direction: column;
@@ -203,13 +208,9 @@ fieldset {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid transparent;
+  border: 2px solid transparent; /* colore team */
   border-radius: 4px;
   box-sizing: border-box;
-}
-
-.ship-icon {
-  font-size: 20px;
 }
 
 /* "stendardo" del livello */
@@ -234,8 +235,8 @@ fieldset {
   font-size: 10px;
 }
 
+/* classi per tipo di nave – QUI ci metti le tue immagini */
 /* classi per tipo di nave – future immagini */
-
 
 .cell.ship-type-1 {
   background-image: url("img/Sloop.jpeg");
@@ -271,7 +272,6 @@ fieldset {
   background-position: center;
   background-repeat: no-repeat;
 }
-
 /* tabella ruoli */
 
 .roles-table {
