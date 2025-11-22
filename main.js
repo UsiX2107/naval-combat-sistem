@@ -1,11 +1,3 @@
-const typeIcons = {
-  1: "", // Sloop
-  2: "", // Goletta
-  3: "", // Brigantino (placeholder)
-  4: "", // Fregata
-  5: ""   // Galeone (placeholder)
-};
-
 const directionArrows = {
   N: "↑",
   NE: "↗",
@@ -55,7 +47,7 @@ function bindUI() {
     .getElementById("next-turn-btn")
     .addEventListener("click", nextTurn);
 
-  // battle sub-modes
+  // bottoni modalità battaglia
   const battleModeButtons = document.querySelectorAll(".battle-mode-btn");
   battleModeButtons.forEach(btn => {
     btn.addEventListener("click", () => {
@@ -93,10 +85,14 @@ function setMode(mode) {
   }
 
   renderMode();
+  renderBattleMode();
   renderTurn();
 }
 
 function setBattleMode(mode) {
+  // si può cambiare SOLO in modalità battaglia
+  if (gameState.mode !== "battle") return;
+
   gameState.battleMode = mode;
   renderBattleMode();
 }
@@ -159,7 +155,7 @@ function onShipFormSubmit(event) {
 
   const id = "ship" + nextShipId++;
 
-  // Calcolo automatico delle statistiche
+  // Stat automatiche
   const cd = 8 + 2 * level;
   const ca = 8 + 2 * type;
   const pf = 400 * level * type;
@@ -182,7 +178,7 @@ function onShipFormSubmit(event) {
     });
   }
 
-  // Macchine d'assedio: nessun limite su quali, solo tre slot
+  // Macchine d'assedio: fino a 3 slot, anche uguali
   const siegeMachines = siegeSelects.map(sel =>
     sel ? (sel.value || null) : null
   );
@@ -284,12 +280,10 @@ function renderShips() {
     const selector = `.cell[data-x="${ship.x}"][data-y="${ship.y}"]`;
     const cell = document.querySelector(selector);
     if (cell) {
-      const icon = typeIcons[ship.type] || "🚢";
       const arrow = directionArrows[ship.direction] || "";
 
       cell.innerHTML = `
         <div class="ship-cell-content">
-          <span class="ship-icon">${icon}</span>
           <span class="ship-direction-arrow">${arrow}</span>
           <span class="ship-level-badge">Lv${ship.level}</span>
         </div>
@@ -448,10 +442,10 @@ function renderMode() {
 function renderBattleMode() {
   const buttons = document.querySelectorAll(".battle-mode-btn");
   buttons.forEach(btn => {
-    btn.classList.toggle(
-      "active",
-      btn.dataset.mode === gameState.battleMode
-    );
+    const isActive = btn.dataset.mode === gameState.battleMode;
+    btn.classList.toggle("active", isActive);
+    // disabilita i bottoni se non siamo in modalità battaglia
+    btn.disabled = (gameState.mode !== "battle");
   });
 }
 
